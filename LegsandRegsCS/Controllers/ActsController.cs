@@ -4,18 +4,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using LegsandRegsCS.Special_Data_Types;
 
 namespace LegsandRegsCS.Controllers
 {
-    [Route("getActs")]
+    [Route("api/acts")]
     [ApiController]
     public class ActsController : ControllerBase
     {
         // GET: api/Acts
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<Act> Get()
         {
-            return new string[] { "value1", "value2" };
+            Act act1 = new Act("A1", "A1", "example title blablabla", "eng", "2020-04-28");
+            Act act2 = new Act("A2", "A2", "example title2 blablabla", "fra", "2020-07-19");
+            List<Act> list = new List<Act>();
+            list.Add(act1);
+            list.Add(act2);
+            IEnumerable<Act> iEnumerable = list;
+            return iEnumerable;
         }
 
         // GET: api/Acts/5
