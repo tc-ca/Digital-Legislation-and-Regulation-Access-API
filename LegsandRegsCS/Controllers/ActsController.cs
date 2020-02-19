@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using LegsandRegsCS.Special_Data_Types;
+using System.Text.Json;
 
 namespace LegsandRegsCS.Controllers
 {
@@ -14,22 +15,16 @@ namespace LegsandRegsCS.Controllers
     {
         // GET: api/Acts
         [HttpGet]
-        public IEnumerable<Act> Get()
+        public String Get()
         {
-            Act act1 = new Act("A1", "A1", "example title blablabla", "eng", "2020-04-28");
-            Act act2 = new Act("A2", "A2", "example title2 blablabla", "fra", "2020-07-19");
-            List<Act> list = new List<Act>();
-            list.Add(act1);
-            list.Add(act2);
-            IEnumerable<Act> iEnumerable = list;
-            return iEnumerable;
+            return JsonSerializer.Serialize(DatabaseConnector.getActs());
         }
 
         // GET: api/Acts/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        [HttpGet("{uniqueId}/{lang}", Name = "Get")]
+        public string Get(string uniqueId, string lang)
         {
-            return "value" + id as String;
+            return JsonSerializer.Serialize(DatabaseConnector.getActById(uniqueId, lang));
         }
 
         // POST: api/Acts

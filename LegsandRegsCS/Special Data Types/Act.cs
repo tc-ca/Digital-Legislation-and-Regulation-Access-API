@@ -7,11 +7,11 @@ namespace LegsandRegsCS.Special_Data_Types
 {
     public class Act
     {
-        string uniqueId { get; set; }
-        string officialNum { get; set; }
-        string title { get; set; }
-        string lang { get; set; }
-        string currentToDate { get; set; }
+        public string uniqueId { get; set; }
+        public string officialNum { get; set; }
+        public string title { get; set; }
+        public string lang { get; set; }
+        public string currentToDate { get; set; }
 
         public Act(string uniqueId, string officialNum, string title, string lang, string currentToDate)
         {
