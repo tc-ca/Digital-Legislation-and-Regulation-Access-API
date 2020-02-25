@@ -12,48 +12,48 @@ namespace LegsandRegsCS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ActsController : ControllerBase
+    public class RegsController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public ActsController(AppDbContext context)
+        public RegsController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Acts
+        // GET: api/Regs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Act>>> GetAct()
+        public async Task<ActionResult<IEnumerable<Reg>>> GetReg()
         {
-            return await _context.Act.ToListAsync();
+            return await _context.Reg.ToListAsync();
         }
 
-        // GET: api/Acts/5
+        // GET: api/Regs/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Act>> GetAct(string id)
+        public async Task<ActionResult<Reg>> GetReg(string id)
         {
-            var act = await _context.Act.FindAsync(id);
+            var reg = await _context.Reg.FindAsync(id);
 
-            if (act == null)
+            if (reg == null)
             {
                 return NotFound();
             }
 
-            return act;
+            return reg;
         }
 
-        // PUT: api/Acts/5
+        // PUT: api/Regs/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAct(string id, Act act)
+        public async Task<IActionResult> PutReg(string id, Reg reg)
         {
-            if (id != act.uniqueId)
+            if (id != reg.id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(act).State = EntityState.Modified;
+            _context.Entry(reg).State = EntityState.Modified;
 
             try
             {
@@ -61,7 +61,7 @@ namespace LegsandRegsCS.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ActExists(id))
+                if (!RegExists(id))
                 {
                     return NotFound();
                 }
@@ -74,20 +74,20 @@ namespace LegsandRegsCS.Controllers
             return NoContent();
         }
 
-        // POST: api/Acts
+        // POST: api/Regs
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<Act>> PostAct(Act act)
+        public async Task<ActionResult<Reg>> PostReg(Reg reg)
         {
-            _context.Act.Add(act);
+            _context.Reg.Add(reg);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (ActExists(act.uniqueId))
+                if (RegExists(reg.id))
                 {
                     return Conflict();
                 }
@@ -97,28 +97,28 @@ namespace LegsandRegsCS.Controllers
                 }
             }
 
-            return CreatedAtAction("GetAct", new { id = act.uniqueId }, act);
+            return CreatedAtAction("GetReg", new { id = reg.id }, reg);
         }
 
-        // DELETE: api/Acts/5
+        // DELETE: api/Regs/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Act>> DeleteAct(string id)
+        public async Task<ActionResult<Reg>> DeleteReg(string id)
         {
-            var act = await _context.Act.FindAsync(id);
-            if (act == null)
+            var reg = await _context.Reg.FindAsync(id);
+            if (reg == null)
             {
                 return NotFound();
             }
 
-            _context.Act.Remove(act);
+            _context.Reg.Remove(reg);
             await _context.SaveChangesAsync();
 
-            return act;
+            return reg;
         }
 
-        private bool ActExists(string id)
+        private bool RegExists(string id)
         {
-            return _context.Act.Any(e => e.uniqueId == id);
+            return _context.Reg.Any(e => e.id == id);
         }
     }
 }
