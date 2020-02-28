@@ -29,10 +29,10 @@ namespace LegsandRegsCS.Controllers
         }
 
         // GET: api/Acts/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Act>> GetAct(string id)
+        [HttpGet("{uniqueId}/{lang}")]
+        public async Task<ActionResult<Act>> GetAct(string uniqueId, string lang)
         {
-            var act = await _context.Act.FindAsync(id);
+            var act = await _context.Act.FindAsync(uniqueId,lang);
 
             if (act == null)
             {
@@ -42,11 +42,7 @@ namespace LegsandRegsCS.Controllers
             return act;
         }
 
-        // POST: api/Acts
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<Act>> PostAct(Act act)
+        private async Task<ActionResult<Act>> PostAct(Act act)
         {
             _context.Act.Add(act);
             try

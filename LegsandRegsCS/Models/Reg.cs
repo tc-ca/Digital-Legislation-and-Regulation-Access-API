@@ -16,6 +16,6 @@ namespace LegsandRegsCS.Models
         public string title { get; set; }
         public string lang { get; set; }
         public string currentToDate { get; set; }
-        public string parentActId { get; set; }
+        //public List<String> parentActs { get; set; }
     }
 }

@@ -7,6 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using LegsandRegsCS.Data;
 using LegsandRegsCS.Models;
+using System.Net;
+using System.IO;
+using System.Xml.Linq;
 
 namespace LegsandRegsCS.Data
 {
@@ -16,54 +19,27 @@ namespace LegsandRegsCS.Data
         {
             using (var context = new AppDbContext(serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>()))
             {
-                Console.WriteLine("reached flag 1");
-                if (!context.Act.Any())
+                string xml = httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
+
+                XElement actsAndRegs = XElement.Parse(xml);
+
+                var acts = actsAndRegs.Element("Acts");
+                var regs = actsAndRegs.Element("Regulations");
+                bool success = true;
+
+                foreach (XElement reg in regs.Elements("Regulation"))
                 {
-                    Console.WriteLine("reached flag 2");
-                    context.Act.AddRange(
-                        new Act
-                        {
-                            uniqueId = "A-1",
-                            officialNum = "A-1",
-                            lang = "eng",
-                            title = "Access to Information Act",
-                            currentToDate = "2020-01-16"
-                        },
-                        new Act
-                        {
-                            uniqueId = "A-1",
-                            officialNum = "A-1",
-                            lang = "fra",
-                            title = "Loi sur l’accès à l’information",
-                            currentToDate = "2020-01-16"
-                        }
-                    );
-                    Console.WriteLine("reached flag 3");
-                }
-                if (!context.Reg.Any())
-                {
-                    context.Reg.AddRange(
+                    context.Reg.Add(
                         new Reg
                         {
-                            id = "638933E",
-                            otherLangId = "627530F",
-                            uniqueId = "SI-83-108",
-                            title = "Designating the Minister of Justice and the President of the Treasury Board as Ministers for Purposes of Certain Sections of the Act",
-                            lang = "eng",
-                            currentToDate = "2020-01-16",
-                            parentActId = "A-1"
-                        },
-                        new Reg
-                        {
-                            id = "627530F",
-                            otherLangId = "638933E",
-                            uniqueId = "TR-83-108",
-                            title = "Désignation du ministre de la Justice et du président du conseil du Trésor comme ministres chargés de l’application de certains articles de la Loi",
-                            lang = "fra",
-                            currentToDate = "2020-01-16",
-                            parentActId = "A-1"
-                        }
-                    );
+                            id = reg.Attribute("id").Value,
+                            otherLangId = reg.Attribute("olid").Value,
+                            uniqueId = reg.Element("UniqueId").Value,
+                            title = reg.Element("Title").Value,
+                            lang = reg.Element("Language").Value,
+                            currentToDate = reg.Element("CurrentToDate").Value,
+                            //arentActs = new List<string>()
+                        });
                 }
 
                 try
@@ -72,9 +48,90 @@ namespace LegsandRegsCS.Data
                 }
                 catch (DbUpdateException)
                 {
-                    Console.WriteLine("There was an exception thrown when saving changes");
+                    Console.WriteLine("There was an exception thrown when saving changes to Regs");
+                    success = false;
                 }
+
+                if (success)
+                {
+                    foreach (XElement act in acts.Elements("Act"))
+                    {
+                        List<string> childregs = new List<string>();
+                        try
+                        {
+                            foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
+                            {
+                                childregs.Add(childReg.Attribute("idRef").Value);
+                                Console.WriteLine(childReg.Attribute("idRef").Value);
+                            }
+                        }
+                        catch { }
+
+                        context.Act.Add(
+                            new Act
+                            {
+                                uniqueId = act.Element("UniqueId").Value,
+                                officialNum = act.Element("OfficialNumber").Value,
+                                lang = act.Element("Language").Value,
+                                title = act.Element("Title").Value,
+                                currentToDate = act.Element("CurrentToDate").Value,
+                                //regsUnderAct = childregs
+                            });
+                    }
+                }
+
+                try
+                {
+                    await context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    Console.WriteLine("There was an exception thrown when saving changes to Acts");
+                }
+
+
             }
         }
+
+        private static string httpGet(string url)
+        {
+            string output = "The request failed.";
+
+            try 
+            {
+                System.Net.HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    output = reader.ReadToEnd();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return output;
+        }
     }
+    /*var reg =
+                                from results in regs.Elements()
+                                where results.Attribute("id").Value == childReg.Attribute("idRef").Value
+                                select results;
+                            foreach (XElement result in reg)
+                            {
+                                context.Reg.Add(
+                                    new Reg
+                                    {
+                                        id = result.Attribute("id").Value,
+                                        otherLangId = result.Attribute("olid").Value,
+                                        uniqueId = result.Element("UniqueId").Value,
+                                        title = result.Element("Title").Value,
+                                        lang = result.Element("Language").Value,
+                                        currentToDate = result.Element("CurrentToDate").Value,
+                                        parentActId = act.Element("UniqueId").Value
+                                    });
+                            }
+*/
 }

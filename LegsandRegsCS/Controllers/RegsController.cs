@@ -42,43 +42,7 @@ namespace LegsandRegsCS.Controllers
             return reg;
         }
 
-        // PUT: api/Regs/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutReg(string id, Reg reg)
-        {
-            if (id != reg.id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(reg).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RegExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Regs
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<Reg>> PostReg(Reg reg)
+        private async Task<ActionResult<Reg>> PostReg(Reg reg)
         {
             _context.Reg.Add(reg);
             try
@@ -100,9 +64,7 @@ namespace LegsandRegsCS.Controllers
             return CreatedAtAction("GetReg", new { id = reg.id }, reg);
         }
 
-        // DELETE: api/Regs/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Reg>> DeleteReg(string id)
+        private async Task<ActionResult<Reg>> DeleteReg(string id)
         {
             var reg = await _context.Reg.FindAsync(id);
             if (reg == null)
