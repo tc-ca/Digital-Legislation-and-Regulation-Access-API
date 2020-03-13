@@ -10,6 +10,9 @@ using LegsandRegsCS.Models;
 using System.Net;
 using System.IO;
 using System.Xml.Linq;
+using System.Xml;
+using Newtonsoft.Json;
+using System.Threading;
 
 namespace LegsandRegsCS.Data
 {
@@ -17,6 +20,7 @@ namespace LegsandRegsCS.Data
     {
         public static async void Initialize(IServiceProvider serviceProvider)
         {
+            
             using (var context = new AppDbContext(serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>()))
             {
                 string xml = httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
@@ -26,6 +30,7 @@ namespace LegsandRegsCS.Data
                 var acts = actsAndRegs.Element("Acts");
                 var regs = actsAndRegs.Element("Regulations");
                 bool success = true;
+
 
                 foreach (XElement reg in regs.Elements("Regulation"))
                 {
@@ -38,13 +43,23 @@ namespace LegsandRegsCS.Data
                             title = reg.Element("Title").Value,
                             lang = reg.Element("Language").Value,
                             currentToDate = reg.Element("CurrentToDate").Value,
-                            //arentActs = new List<string>()
+                            details = "placeholder"
                         });
+                    /*try
+                    {
+                        await context.SaveChangesAsync();
+                        Console.WriteLine("Saved the reg " + reg.Attribute("id").Value);
+                    }
+                    catch (DbUpdateException)
+                    {
+                        Console.WriteLine("Exception while saving reg " + reg.Attribute("id").Value);
+                    }*/
                 }
 
                 try
                 {
                     await context.SaveChangesAsync();
+                    Console.WriteLine("Regs were saved successfully");
                 }
                 catch (DbUpdateException)
                 {
@@ -52,37 +67,73 @@ namespace LegsandRegsCS.Data
                     success = false;
                 }
 
-                if (success)
+                if (success || !success)
                 {
+                    int i = 0;
                     foreach (XElement act in acts.Elements("Act"))
                     {
-                        List<string> childregs = new List<string>();
+                        string fullDetailsJSON = "";
+
+                        /*try
+                        {
+                            var fullDetailsXML = XElement.Parse(httpGet(act.Element("LinkToXML").Value));
+
+                            XmlDocument doc = new XmlDocument();
+                            doc.LoadXml(fullDetailsXML.ToString());
+                            fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
+                        }
+                        catch { }*/
+                        Act newAct = new Act
+                        {
+                            uniqueId = act.Element("UniqueId").Value,
+                            officialNum = act.Element("OfficialNumber").Value,
+                            lang = act.Element("Language").Value,
+                            title = act.Element("Title").Value,
+                            currentToDate = act.Element("CurrentToDate").Value,
+                            details = fullDetailsJSON,
+                            actRegs = new List<ActReg>()
+                        };
+
                         try
                         {
                             foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
                             {
-                                childregs.Add(childReg.Attribute("idRef").Value);
-                                Console.WriteLine(childReg.Attribute("idRef").Value);
+                                var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
+                                if (reg != null)
+                                {
+                                    newAct.actRegs.Add(new ActReg
+                                    {
+                                        act = newAct,
+                                        reg = reg
+                                    });
+                                }
+
                             }
                         }
                         catch { }
 
-                        context.Act.Add(
-                            new Act
+                        context.Act.Add(newAct);
+
+                        if (i % 50 == 0)
+                        {
+                            try
                             {
-                                uniqueId = act.Element("UniqueId").Value,
-                                officialNum = act.Element("OfficialNumber").Value,
-                                lang = act.Element("Language").Value,
-                                title = act.Element("Title").Value,
-                                currentToDate = act.Element("CurrentToDate").Value,
-                                //regsUnderAct = childregs
-                            });
+                                await context.SaveChangesAsync();
+                                Console.WriteLine("A batch of Acts was saved successfully");
+                            }
+                            catch (DbUpdateException)
+                            {
+                                Console.WriteLine("There was an exception thrown when saving changes to a batch of Acts");
+                            }
+                        }
+                        i++;
                     }
                 }
 
                 try
                 {
                     await context.SaveChangesAsync();
+                    Console.WriteLine("Acts were saved successfully");
                 }
                 catch (DbUpdateException)
                 {
@@ -115,23 +166,5 @@ namespace LegsandRegsCS.Data
             return output;
         }
     }
-    /*var reg =
-                                from results in regs.Elements()
-                                where results.Attribute("id").Value == childReg.Attribute("idRef").Value
-                                select results;
-                            foreach (XElement result in reg)
-                            {
-                                context.Reg.Add(
-                                    new Reg
-                                    {
-                                        id = result.Attribute("id").Value,
-                                        otherLangId = result.Attribute("olid").Value,
-                                        uniqueId = result.Element("UniqueId").Value,
-                                        title = result.Element("Title").Value,
-                                        lang = result.Element("Language").Value,
-                                        currentToDate = result.Element("CurrentToDate").Value,
-                                        parentActId = act.Element("UniqueId").Value
-                                    });
-                            }
-*/
+
 }

@@ -42,42 +42,6 @@ namespace LegsandRegsCS.Controllers
             return act;
         }
 
-        private async Task<ActionResult<Act>> PostAct(Act act)
-        {
-            _context.Act.Add(act);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (ActExists(act.uniqueId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetAct", new { id = act.uniqueId }, act);
-        }
-
-        private async Task<ActionResult<Act>> DeleteAct(string id)
-        {
-            var act = await _context.Act.FindAsync(id);
-            if (act == null)
-            {
-                return NotFound();
-            }
-
-            _context.Act.Remove(act);
-            await _context.SaveChangesAsync();
-
-            return act;
-        }
-
         private bool ActExists(string id)
         {
             return _context.Act.Any(e => e.uniqueId == id);

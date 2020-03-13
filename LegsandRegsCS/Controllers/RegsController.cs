@@ -42,42 +42,6 @@ namespace LegsandRegsCS.Controllers
             return reg;
         }
 
-        private async Task<ActionResult<Reg>> PostReg(Reg reg)
-        {
-            _context.Reg.Add(reg);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (RegExists(reg.id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetReg", new { id = reg.id }, reg);
-        }
-
-        private async Task<ActionResult<Reg>> DeleteReg(string id)
-        {
-            var reg = await _context.Reg.FindAsync(id);
-            if (reg == null)
-            {
-                return NotFound();
-            }
-
-            _context.Reg.Remove(reg);
-            await _context.SaveChangesAsync();
-
-            return reg;
-        }
-
         private bool RegExists(string id)
         {
             return _context.Reg.Any(e => e.id == id);
