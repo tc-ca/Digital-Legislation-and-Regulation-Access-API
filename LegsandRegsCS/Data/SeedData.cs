@@ -91,7 +91,7 @@ namespace LegsandRegsCS.Data
                             title = act.Element("Title").Value,
                             currentToDate = act.Element("CurrentToDate").Value,
                             details = fullDetailsJSON,
-                            actRegs = new List<ActReg>()
+                            regs = new List<ActReg>()
                         };
 
                         try
@@ -101,9 +101,8 @@ namespace LegsandRegsCS.Data
                                 var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
                                 if (reg != null)
                                 {
-                                    newAct.actRegs.Add(new ActReg
+                                    newAct.regs.Add(new ActReg
                                     {
-                                        act = newAct,
                                         reg = reg
                                     });
                                 }

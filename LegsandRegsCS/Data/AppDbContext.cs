@@ -23,14 +23,14 @@ namespace LegsandRegsCS.Data
             modelbuilder.Entity<Act>().HasKey(c => new { c.uniqueId, c.lang });
             modelbuilder.Entity<ActReg>().HasKey(c => new { c.actUniqueId, c.actLang, c.regId });
 
-            modelbuilder.Entity<ActReg>()
+            /*modelbuilder.Entity<ActReg>()
                 .HasOne(ActReg => ActReg.act)
                 .WithMany(Act => Act.actRegs)
-                .HasForeignKey(ActReg => new {ActReg.actUniqueId, ActReg.actLang});
-            modelbuilder.Entity<ActReg>()
+                .HasForeignKey(ActReg => new {ActReg.actUniqueId, ActReg.actLang});*/
+            /*modelbuilder.Entity<ActReg>()
                 .HasOne(ActReg => ActReg.reg)
                 .WithMany(Reg => Reg.actRegs)
-                .HasForeignKey(ActReg => ActReg.regId);
+                .HasForeignKey(ActReg => ActReg.regId);*/
         }
     }
 }

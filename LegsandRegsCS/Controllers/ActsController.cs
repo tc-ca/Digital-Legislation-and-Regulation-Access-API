@@ -25,21 +25,21 @@ namespace LegsandRegsCS.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Act>>> GetAct()
         {
-            return await _context.Act.ToListAsync();
+            return await _context.Act.Include(x => x.regs).ToListAsync();
         }
 
         // GET: api/Acts/5
         [HttpGet("{uniqueId}/{lang}")]
         public async Task<ActionResult<Act>> GetAct(string uniqueId, string lang)
         {
-            var act = await _context.Act.FindAsync(uniqueId,lang);
+            var act = await _context.Act.Include(x => x.regs).FirstOrDefaultAsync(x => x.uniqueId == uniqueId && x.lang == lang);
 
             if (act == null)
             {
                 return NotFound();
             }
 
-            return act;
+            return Ok(act);
         }
 
         private bool ActExists(string id)
