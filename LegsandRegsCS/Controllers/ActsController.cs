@@ -39,7 +39,7 @@ namespace LegsandRegsCS.Controllers
                 return NotFound();
             }
 
-            return Ok(act);
+            return act;
         }
 
         private bool ActExists(string id)

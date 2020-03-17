@@ -29,10 +29,11 @@ namespace LegsandRegsCS.Data
 
                 var acts = actsAndRegs.Element("Acts");
                 var regs = actsAndRegs.Element("Regulations");
-                bool success = true;
 
-
-                foreach (XElement reg in regs.Elements("Regulation"))
+                int i = 1;
+                int successes = 0;
+                int failures = 0;
+                /*foreach (XElement reg in regs.Elements("Regulation"))
                 {
                     context.Reg.Add(
                         new Reg
@@ -42,101 +43,145 @@ namespace LegsandRegsCS.Data
                             uniqueId = reg.Element("UniqueId").Value,
                             title = reg.Element("Title").Value,
                             lang = reg.Element("Language").Value,
-                            currentToDate = reg.Element("CurrentToDate").Value,
-                            details = "placeholder"
+                            currentToDate = reg.Element("CurrentToDate").Value
                         });
-                    /*try
+                    string fullDetailsJSON = "";
+
+                    try
                     {
-                        await context.SaveChangesAsync();
-                        Console.WriteLine("Saved the reg " + reg.Attribute("id").Value);
+                        var fullDetailsXML = XElement.Parse(httpGet(reg.Element("LinkToXML").Value));
+
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(fullDetailsXML.ToString());
+                        fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
                     }
-                    catch (DbUpdateException)
+                    catch { }
+
+                    if (fullDetailsJSON != "")
                     {
-                        Console.WriteLine("Exception while saving reg " + reg.Attribute("id").Value);
-                    }*/
-                }
+                        context.RegDetails.Add(new RegDetails
+                        {
+                            id = reg.Attribute("id").Value,
+                            fullDetails = fullDetailsJSON
+                        });
+                    }
 
-                try
-                {
-                    await context.SaveChangesAsync();
-                    Console.WriteLine("Regs were saved successfully");
-                }
-                catch (DbUpdateException)
-                {
-                    Console.WriteLine("There was an exception thrown when saving changes to Regs");
-                    success = false;
-                }
-
-                if (success || !success)
-                {
-                    int i = 0;
-                    foreach (XElement act in acts.Elements("Act"))
+                    if (i % 25 == 0)
                     {
-                        string fullDetailsJSON = "";
-
-                        /*try
-                        {
-                            var fullDetailsXML = XElement.Parse(httpGet(act.Element("LinkToXML").Value));
-
-                            XmlDocument doc = new XmlDocument();
-                            doc.LoadXml(fullDetailsXML.ToString());
-                            fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
-                        }
-                        catch { }*/
-                        Act newAct = new Act
-                        {
-                            uniqueId = act.Element("UniqueId").Value,
-                            officialNum = act.Element("OfficialNumber").Value,
-                            lang = act.Element("Language").Value,
-                            title = act.Element("Title").Value,
-                            currentToDate = act.Element("CurrentToDate").Value,
-                            details = fullDetailsJSON,
-                            regs = new List<ActReg>()
-                        };
-
                         try
                         {
-                            foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
-                            {
-                                var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
-                                if (reg != null)
-                                {
-                                    newAct.regs.Add(new ActReg
-                                    {
-                                        reg = reg
-                                    });
-                                }
-
-                            }
+                            await context.SaveChangesAsync();
+                            successes++;
+                            Console.WriteLine("A batch of Regs was saved successfully. There have been " + successes + " successes and " + failures + " failures.");
                         }
-                        catch { }
-
-                        context.Act.Add(newAct);
-
-                        if (i % 50 == 0)
+                        catch (DbUpdateException)
                         {
-                            try
-                            {
-                                await context.SaveChangesAsync();
-                                Console.WriteLine("A batch of Acts was saved successfully");
-                            }
-                            catch (DbUpdateException)
-                            {
-                                Console.WriteLine("There was an exception thrown when saving changes to a batch of Acts");
-                            }
+                            failures++;
+                            Console.WriteLine("There was an exception thrown when saving changes to a batch of Regs");
                         }
-                        i++;
                     }
+                    i++;
                 }
 
                 try
                 {
                     await context.SaveChangesAsync();
-                    Console.WriteLine("Acts were saved successfully");
+                    successes++;
+                    Console.WriteLine("Regs were saved successfully. There have been " + successes + " successes and " + failures + " failures.");
                 }
                 catch (DbUpdateException)
                 {
-                    Console.WriteLine("There was an exception thrown when saving changes to Acts");
+                    failures++;
+                    Console.WriteLine("There was an exception thrown when saving changes to the last batch of Regs. There have been " + successes + " successes and " + failures + " failures.");
+                }*/
+
+                i = 1;
+                successes = 0;
+                failures = 0;
+                foreach (XElement act in acts.Elements("Act"))
+                {
+                    if (context.Act.Find(act.Element("UniqueId").Value,act.Element("Language").Value) != null)
+                        continue;
+
+                    string fullDetailsJSON = "";
+
+                    try
+                    {
+                        var fullDetailsXML = XElement.Parse(httpGet(act.Element("LinkToXML").Value));
+
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(fullDetailsXML.ToString());
+                        fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
+                    }
+                    catch { }
+
+                    if(fullDetailsJSON != "")
+                    {
+                        context.ActDetails.Add(new ActDetails
+                        {
+                            uniqueId = act.Element("UniqueId").Value,
+                            lang = act.Element("Language").Value,
+                            fullDetails = fullDetailsJSON
+                        });
+                    }
+
+                    Act newAct = new Act
+                    {
+                        uniqueId = act.Element("UniqueId").Value,
+                        officialNum = act.Element("OfficialNumber").Value,
+                        lang = act.Element("Language").Value,
+                        title = act.Element("Title").Value,
+                        currentToDate = act.Element("CurrentToDate").Value,
+                        regs = new List<ActReg>()
+                    };
+
+                    try
+                    {
+                        foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
+                        {
+                            var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
+                            if (reg != null)
+                            {
+                                newAct.regs.Add(new ActReg
+                                {
+                                    reg = reg
+                                });
+                            }
+
+                        }
+                    }
+                    catch { }
+
+                    context.Act.Add(newAct);
+
+                    //if (i % 15 == 0)
+                    if(0==0)
+                    {
+                        try
+                        {
+                            await context.SaveChangesAsync();
+                            successes++;
+                            Console.WriteLine("A batch of Acts was saved successfully. There have been " + successes + " successes and " + failures + " failures.");
+                        }
+                        catch (DbUpdateException)
+                        {
+                            failures++;
+                            Console.WriteLine("There was an exception thrown when saving changes to a batch of Acts. There have been " + successes + " successes and " + failures + " failures.");
+                        }
+                    }
+                    i++;
+                }
+
+                try
+                {
+                    await context.SaveChangesAsync();
+                    successes++;
+                    Console.WriteLine("Acts were saved successfully. There have been " + successes + " successes and " + failures + " failures.");
+                }
+                catch (DbUpdateException)
+                {
+                    failures++;
+                    Console.WriteLine("There was an exception thrown when saving changes to the last batch of Acts. There have been " + successes + " successes and " + failures + " failures.");
                 }
 
 
