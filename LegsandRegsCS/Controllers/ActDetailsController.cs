@@ -35,6 +35,25 @@ namespace LegsandRegsCS.Controllers
             return actDetails;
         }
 
+        // POST: api/ActDetails
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<ActDetails>>> GetActs([FromBody] List<ActId> ids)
+        {
+            if (ids == null)
+            {
+                return NotFound();
+            }
+
+            List<string> concatIds = new List<string>();
+
+            foreach (ActId id in ids)
+            {
+                concatIds.Add(id.uniqueId + id.lang);
+            }
+
+            return await _context.ActDetails.Where(a => concatIds.Contains(a.uniqueId + a.lang)).ToListAsync();
+        }
+
         private bool ActDetailsExists(string id)
         {
             return _context.ActDetails.Any(e => e.uniqueId == id);

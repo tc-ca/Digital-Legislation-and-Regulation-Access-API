@@ -23,7 +23,7 @@ namespace LegsandRegsCS.Controllers
 
         // GET: api/RegDetails/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RegDetails>> GetRegDetails(string id)
+        public async Task<ActionResult<RegDetails>> GetRegDetail(string id)
         {
             var regDetails = await _context.RegDetails.FindAsync(id);
 
@@ -33,6 +33,18 @@ namespace LegsandRegsCS.Controllers
             }
 
             return regDetails;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<RegDetails>>> GetRegdetails([FromBody] string[] ids)
+        {
+            if (ids == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.RegDetails.Where(r => ids.Contains(r.id)).ToListAsync();
+
         }
 
         private bool RegDetailsExists(string id)

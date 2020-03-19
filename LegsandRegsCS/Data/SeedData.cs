@@ -33,7 +33,7 @@ namespace LegsandRegsCS.Data
                 int i = 1;
                 int successes = 0;
                 int failures = 0;
-                /*foreach (XElement reg in regs.Elements("Regulation"))
+                foreach (XElement reg in regs.Elements("Regulation"))
                 {
                     context.Reg.Add(
                         new Reg
@@ -45,18 +45,8 @@ namespace LegsandRegsCS.Data
                             lang = reg.Element("Language").Value,
                             currentToDate = reg.Element("CurrentToDate").Value
                         });
-                    string fullDetailsJSON = "";
-
-                    try
-                    {
-                        var fullDetailsXML = XElement.Parse(httpGet(reg.Element("LinkToXML").Value));
-
-                        XmlDocument doc = new XmlDocument();
-                        doc.LoadXml(fullDetailsXML.ToString());
-                        fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
-                    }
-                    catch { }
-
+                    string fullDetailsJSON = getJsonFromXmlOnWeb(reg.Element("LinkToXML").Value);
+                    
                     if (fullDetailsJSON != "")
                     {
                         context.RegDetails.Add(new RegDetails
@@ -93,7 +83,7 @@ namespace LegsandRegsCS.Data
                 {
                     failures++;
                     Console.WriteLine("There was an exception thrown when saving changes to the last batch of Regs. There have been " + successes + " successes and " + failures + " failures.");
-                }*/
+                }
 
                 i = 1;
                 successes = 0;
@@ -103,17 +93,7 @@ namespace LegsandRegsCS.Data
                     if (context.Act.Find(act.Element("UniqueId").Value,act.Element("Language").Value) != null)
                         continue;
 
-                    string fullDetailsJSON = "";
-
-                    try
-                    {
-                        var fullDetailsXML = XElement.Parse(httpGet(act.Element("LinkToXML").Value));
-
-                        XmlDocument doc = new XmlDocument();
-                        doc.LoadXml(fullDetailsXML.ToString());
-                        fullDetailsJSON = JsonConvert.SerializeXmlNode(doc);
-                    }
-                    catch { }
+                    string fullDetailsJSON = getJsonFromXmlOnWeb(act.Element("LinkToXML").Value);
 
                     if(fullDetailsJSON != "")
                     {
@@ -208,6 +188,22 @@ namespace LegsandRegsCS.Data
             }
 
             return output;
+        }
+
+        private static string getJsonFromXmlOnWeb(string url)
+        {
+            try
+            {
+                var fullDetailsXML = XElement.Parse(httpGet(url));
+
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(fullDetailsXML.ToString());
+                return JsonConvert.SerializeXmlNode(doc).Replace(@"\","");
+            }
+            catch
+            {
+                return "";
+            }
         }
     }
 

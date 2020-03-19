@@ -42,6 +42,21 @@ namespace LegsandRegsCS.Controllers
             return reg;
         }
 
+        // POST: api/Regs
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Reg>>> GetRegs([FromBody] string[] ids)
+        {
+            if (ids == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.Reg.Where(r => ids.Contains(r.id)).ToListAsync();
+
+        }
+
+
+
         private bool RegExists(string id)
         {
             return _context.Reg.Any(e => e.id == id);
