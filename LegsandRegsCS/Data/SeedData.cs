@@ -23,7 +23,9 @@ namespace LegsandRegsCS.Data
             
             using (var context = new AppDbContext(serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>()))
             {
-                string xml = httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
+                Console.WriteLine("Requesting reg data");
+                string xml = await httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
+                Console.WriteLine("Reg data retrieved");
 
                 XElement actsAndRegs = XElement.Parse(xml);
 
@@ -90,8 +92,8 @@ namespace LegsandRegsCS.Data
                 failures = 0;
                 foreach (XElement act in acts.Elements("Act"))
                 {
-                    if (context.Act.Find(act.Element("UniqueId").Value,act.Element("Language").Value) != null)
-                        continue;
+                    /*if (context.Act.Find(act.Element("UniqueId").Value,act.Element("Language").Value) != null)
+                        continue;*/
 
                     string fullDetailsJSON = getJsonFromXmlOnWeb(act.Element("LinkToXML").Value);
 
@@ -168,7 +170,7 @@ namespace LegsandRegsCS.Data
             }
         }
 
-        private static string httpGet(string url)
+        private static async Task<string> httpGet(string url)
         {
             string output = "The request failed.";
 
@@ -194,7 +196,7 @@ namespace LegsandRegsCS.Data
         {
             try
             {
-                var fullDetailsXML = XElement.Parse(httpGet(url));
+                var fullDetailsXML = XElement.Parse(httpGet(url).Result);
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(fullDetailsXML.ToString());
