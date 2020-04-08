@@ -8,13 +8,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LegsandRegsCS.Models
 {
-    public class Act
+    public class Act : ActSummary
     {
-        public string uniqueId { get; set; }
-        public string officialNum { get; set; }
-        public string title { get; set; }
-        public string lang { get; set; }
-        public string currentToDate { get; set; }
         public List<ActReg> regs { get; set; }
     }
 }

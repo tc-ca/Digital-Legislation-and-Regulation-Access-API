@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using LegsandRegsCS.Data;
 using LegsandRegsCS.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace LegsandRegsCS.Controllers
 {
@@ -24,20 +25,36 @@ namespace LegsandRegsCS.Controllers
 
         // GET: api/ActDetails/5
         [HttpGet("{uniqueId}/{lang}")]
+        [ProducesResponseType(typeof(ActDetails), 200)]
         public async Task<ActionResult<string>> GetActDetails(string uniqueId, string lang)
         {
-            var actDetails = await _context.ActDetails.FindAsync(uniqueId,lang);
+            var actDetail = await _context.ActDetails.FindAsync(uniqueId,lang);
 
-            if (actDetails == null)
+            if (actDetail == null)
             {
                 return NotFound();
             }
 
-            return JsonConvert.SerializeObject(actDetails).Replace(@"\", "");
+            //We must split up the ActDetails object and add it back together so that the details get presented as objects and not just strings (since they are stored as a string)
+            JToken fullDetails = JToken.Parse(actDetail.fullDetails);
+
+            JObject parsed = JObject.Parse(
+                JsonConvert.SerializeObject(
+                    new ActId
+                    {
+                        uniqueId = actDetail.uniqueId,
+                        lang = actDetail.lang
+                    }));
+
+            parsed.Add("fullDetails", fullDetails);
+
+            return parsed.ToString();
+            
         }
 
         // POST: api/ActDetails
         [HttpPost]
+        [ProducesResponseType(typeof(List<ActDetails>), 200)]
         public async Task<ActionResult<string>> GetActs([FromBody] List<ActId> ids)
         {
             if (ids == null)
@@ -52,8 +69,27 @@ namespace LegsandRegsCS.Controllers
                 concatIds.Add(id.uniqueId + id.lang);
             }
 
+            List<JObject> output = new List<JObject>();
+
+
             var actDetails = await _context.ActDetails.Where(a => concatIds.Contains(a.uniqueId + a.lang)).ToListAsync();
-            return JsonConvert.SerializeObject(actDetails).Replace(@"\", "");
+            foreach(var actDetail in actDetails)
+            {
+                JToken fullDetails = JToken.Parse(actDetail.fullDetails);
+
+                JObject parsed = JObject.Parse(
+                    JsonConvert.SerializeObject(
+                        new ActId
+                        {
+                            uniqueId = actDetail.uniqueId,
+                            lang = actDetail.lang
+                        }));
+
+                parsed.Add("fullDetails", fullDetails);
+                output.Add(parsed);
+
+            }
+            return JsonConvert.SerializeObject(output);
         }
 
         private bool ActDetailsExists(string id)

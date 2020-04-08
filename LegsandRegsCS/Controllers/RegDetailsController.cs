@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using LegsandRegsCS.Data;
 using LegsandRegsCS.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace LegsandRegsCS.Controllers
 {
@@ -24,19 +25,26 @@ namespace LegsandRegsCS.Controllers
 
         // GET: api/RegDetails/5
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(RegDetails), 200)]
         public async Task<ActionResult<string>> GetRegDetail(string id)
         {
-            var regDetails = await _context.RegDetails.FindAsync(id);
+            var regDetail = await _context.RegDetails.FindAsync(id);
 
-            if (regDetails == null)
+            if (regDetail == null)
             {
                 return NotFound();
             }
 
-            return JsonConvert.SerializeObject(regDetails).Replace(@"\", "");
+            JToken fullDetails = JToken.Parse(regDetail.fullDetails);
+
+            JObject parsed = JObject.Parse(JsonConvert.SerializeObject(new RegIdWrapper { id = id }));
+            parsed.Add("fullDetails",fullDetails);
+
+            return parsed.ToString();
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(List<RegDetails>), 200)]
         public async Task<ActionResult<string>> GetRegdetails([FromBody] string[] ids)
         {
             if (ids == null)
@@ -45,7 +53,19 @@ namespace LegsandRegsCS.Controllers
             }
 
             var regDetails = await _context.RegDetails.Where(r => ids.Contains(r.id)).ToListAsync();
-            return JsonConvert.SerializeObject(regDetails).Replace(@"\", "");
+
+            List<JObject> output = new List<JObject>();
+
+            foreach (var regDetail in regDetails)
+            {
+                JToken fullDetails = JToken.Parse(regDetail.fullDetails);
+
+                JObject parsed = JObject.Parse(JsonConvert.SerializeObject(new RegIdWrapper { id = regDetail.id }));
+                parsed.Add("fullDetails", fullDetails);
+
+                output.Add(parsed);
+            }
+            return JsonConvert.SerializeObject(output);
         }
 
         private bool RegDetailsExists(string id)

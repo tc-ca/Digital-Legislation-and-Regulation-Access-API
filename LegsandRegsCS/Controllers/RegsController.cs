@@ -23,7 +23,7 @@ namespace LegsandRegsCS.Controllers
 
         // GET: api/Regs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reg>>> GetReg()
+        public async Task<ActionResult<IEnumerable<Reg>>> GetRegs()
         {
             return await _context.Reg.ToListAsync();
         }

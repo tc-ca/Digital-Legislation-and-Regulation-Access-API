@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LegsandRegsCS.Data;
 using LegsandRegsCS.Models;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace LegsandRegsCS.Controllers
 {
@@ -23,9 +25,32 @@ namespace LegsandRegsCS.Controllers
 
         // GET: api/Acts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Act>>> GetAct()
+        [ProducesResponseType(typeof(List<ActSummary>), 200)]
+        public async Task<ActionResult<string>> GetActs()
+        {
+            var acts = await _context.Act.ToListAsync();
+
+            List<JObject> output = new List<JObject>();
+
+            foreach (var act in acts)
+            {
+                JObject parsed = JObject.Parse(
+                    JsonConvert.SerializeObject(act));
+
+                parsed.Remove("regs");
+
+                output.Add(parsed);
+            }
+
+            return JsonConvert.SerializeObject(output);
+        }
+
+        // GET: api/Acts/Regs
+        [HttpGet("Regs")]
+        public async Task<ActionResult<IEnumerable<Act>>> GetActsWithRegs()
         {
             return await _context.Act.Include(x => x.regs).ToListAsync();
+
         }
 
         // GET: api/Acts/5
