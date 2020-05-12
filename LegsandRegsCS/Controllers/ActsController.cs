@@ -49,7 +49,7 @@ namespace LegsandRegsCS.Controllers
         [HttpGet("Regs")]
         public async Task<ActionResult<IEnumerable<Act>>> GetActsWithRegs()
         {
-            return await _context.Act.Include(x => x.regs).ToListAsync();
+            return await _context.Act.Include(x => x.regs).ThenInclude(x => x.reg).ToListAsync();
 
         }
 
