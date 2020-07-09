@@ -32,8 +32,10 @@ namespace LegsandRegsCS
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TC Legislation and Regulation API", Version = "v1" });
             });
+
+
 
             services.AddDbContext<AppDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AppDbContext")));
@@ -56,7 +58,6 @@ namespace LegsandRegsCS
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
                 var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-                //context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
             }
 
@@ -69,7 +70,8 @@ namespace LegsandRegsCS
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TC Legislation and Regulation API v1");
+                c.DocumentTitle = "TC Legs & Regs API Definition";
             });
 
             app.UseRouting();

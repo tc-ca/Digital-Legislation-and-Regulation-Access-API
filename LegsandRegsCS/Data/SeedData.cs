@@ -23,6 +23,7 @@ namespace LegsandRegsCS.Data
             
             using (var context = new AppDbContext(serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>()))
             {
+                
                 Console.WriteLine("Requesting reg data");
                 string xml = await httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
                 Console.WriteLine("Reg data retrieved");
@@ -168,6 +169,14 @@ namespace LegsandRegsCS.Data
 
 
             }
+        }
+
+        public static async void testDbInput()
+        {
+            var context = new AppDbContext(new DbContextOptions<AppDbContext>());
+
+            context.Act.Add(new Act { uniqueId = "test", lang = "eng", officialNum = "test", currentToDate = "2020-02-26", title = "test"});
+            await context.SaveChangesAsync();
         }
 
         private static async Task<string> httpGet(string url)
