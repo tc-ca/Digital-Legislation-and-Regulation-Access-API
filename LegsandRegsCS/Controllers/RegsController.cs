@@ -25,6 +25,11 @@ namespace LegsandRegsCS.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Reg>>> GetRegs()
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             return await _context.Reg.ToListAsync();
         }
 
@@ -32,6 +37,11 @@ namespace LegsandRegsCS.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Reg>> GetReg(string id)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             var reg = await _context.Reg.FindAsync(id);
 
             if (reg == null)
@@ -46,6 +56,11 @@ namespace LegsandRegsCS.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Reg>>> GetRegs([FromBody] string[] ids)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             if (ids == null)
             {
                 return NotFound();

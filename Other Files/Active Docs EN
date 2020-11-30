@@ -1,0 +1,479 @@
+{
+  "swagger": "2.0",
+  "x-api-store-tags": [
+		"regulation",
+		"legislation",
+		"act",
+		"tc",
+		"transport"
+	],
+  "x-api-store-short-desc": "This repository makes it easy to retrieve all of Canada's acts and regulations.",
+  "x-api-store-long-desc": "The TC Legislation and Regulation Repository is a database and web API that provides all of Canada’s Acts and Regulations in machine-readable format. Each Act and Regulation has a unique identifier, which makes it easy to keep track of references to specific regulations. For example, if you were developing an application for marine inspectors, you may have a section of the app where the inspector records each violation that they found during an inspection. You can link each violation to a regulation. The inspector will be able to search for regulations from within your app instead of finding them manually, and management at TC will be able to derive statistics about which regulations are being violated.",
+  "x-api-store-phone": "",
+  "x-api-store-sensitivity": "Unclassified",
+  "x-api-store-documentation":"
+  
+  <h3>What is TCLRR?</h3>
+  <p>The TC Legislation and Regulation Repository is a database and web API that provides all of Canada’s Acts and Regulations in machine-readable format. Each Act and Regulation has a unique identifier, which makes it easy to keep track of references to specific regulations. For example, if you were developing an application for marine inspectors, you may have a section of the app where the inspector records each violation that they found during an inspection. You can link each violation to a regulation. The inspector will be able to search for regulations from within your app instead of finding them manually, and management at TC will be able to derive statistics about which regulations are being violated.</p>
+  <br>
+  <h3>What service level can be expected from TCLRR?</h3>
+  <p>This application is rated to have a maximum tolerable downtime of eight business hours. There is currently no support guaranteed outside of regular business hours. Any application that depends on data from TCLRR should keep a cache of the data that it needs and should be designed to tolerate this level of downtime.</p>
+  <br>
+  <h3>What should I do if I detect a problem with TCLRR?</h3>
+  <p>If you notice a security related incident, such as an unauthorized entity taking control of TCLRR, you should contact IT Security immediately. If there is a problem such as unavailability or an apparent software bug, you should contact the manager of Digital Oversight. At the time of writing, that is Simon Piche.</p>
+  
+  ",
+  "x-api-store-plans": {
+    "TCLRR_Dev": {
+      "name": "Standard Plan",
+      "description": "Grants standard access to the TC Legislation and Regulation Repository"
+     }
+  },
+  "info": {
+    "title": "TC Legislation and Regulation API",
+    "version": "v1",
+	"description": "This repository makes it easy to retrieve all of Canada's acts and regulations."
+  },
+  "paths": {
+    "/api/ActDetails/{uniqueId}/{lang}": {
+      "get": {
+        "tags": [
+          "ActDetails"
+        ],
+        "parameters": [
+		
+          {
+            "name": "uniqueId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ActDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/ActDetails": {
+      "post": {
+        "tags": [
+          "ActDetails"
+        ],
+        "parameters": [
+          {
+            "name": "actIds",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActId"
+              }
+            }
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ActDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/Acts": {
+      "get": {
+        "tags": [
+          "Acts"
+        ],
+		"parameters": [
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ActSummary"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Acts"
+        ],
+        "parameters": [
+          {
+            "name": "actIds",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActId"
+              }
+            }
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Act"
+            }
+          }
+        }
+      }
+    },
+    "/api/Acts/Regs": {
+      "get": {
+        "tags": [
+          "Acts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Act"
+            }
+          }
+        }
+      }
+    },
+    "/api/Acts/{uniqueId}/{lang}": {
+      "get": {
+        "tags": [
+          "Acts"
+        ],
+        "parameters": [
+          {
+            "name": "uniqueId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ActDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/RegDetails/{id}": {
+      "get": {
+        "tags": [
+          "RegDetails"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/RegDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/RegDetails": {
+      "post": {
+        "tags": [
+          "RegDetails"
+        ],
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/RegDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/Regs": {
+      "get": {
+        "tags": [
+          "Regs"
+        ],
+		"parameters": [
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Reg"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Regs"
+        ],
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Reg"
+            }
+          }
+        }
+      }
+    },
+    "/api/Regs/{id}": {
+      "get": {
+        "tags": [
+          "Regs"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+		  {
+		    "$ref": "#/parameters/UserKeyParam"
+		  }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Reg"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ActDetails": {
+      "type": "object",
+      "properties": {
+        "uniqueId": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "fullDetails": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ActId": {
+      "type": "object",
+      "properties": {
+        "uniqueId": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ActSummary": {
+      "type": "object",
+      "properties": {
+        "uniqueId": {
+          "type": "string"
+        },
+        "officialNum": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "currentToDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Reg": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "otherLangId": {
+          "type": "string"
+        },
+        "uniqueId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "currentToDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ActReg": {
+      "type": "object",
+      "properties": {
+        "actUniqueId": {
+          "type": "string"
+        },
+        "actLang": {
+          "type": "string"
+        },
+        "regId": {
+          "type": "string"
+        },
+        "reg": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Reg"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Act": {
+      "type": "object",
+      "properties": {
+        "regs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActReg"
+          }
+        },
+        "uniqueId": {
+          "type": "string"
+        },
+        "officialNum": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "currentToDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RegDetails": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "fullDetails": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "parameters": {
+		"UserKeyParam": {
+			"name": "user-key",
+			"in": "header",
+			"description": "Your API access key",
+			"required": true,
+			"x-data-threescale-name": "user_keys",
+			"type": "string"
+		}
+	}
+}

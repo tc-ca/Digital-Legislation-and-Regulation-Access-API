@@ -18,6 +18,7 @@ namespace LegsandRegsCS.Data
         public DbSet<LegsandRegsCS.Models.Act> Act { get; set; }
         public DbSet<LegsandRegsCS.Models.ActDetails> ActDetails { get; set; }
         public DbSet<LegsandRegsCS.Models.RegDetails> RegDetails { get; set; }
+        public DbSet<LegsandRegsCS.Models.Language> Language { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelbuilder)
         {
@@ -25,6 +26,7 @@ namespace LegsandRegsCS.Data
             modelbuilder.Entity<Act>().HasKey(c => new { c.uniqueId, c.lang });
             modelbuilder.Entity<ActReg>().HasKey(c => new { c.actUniqueId, c.actLang, c.regId });
             modelbuilder.Entity<ActDetails>().HasKey(c => new { c.uniqueId, c.lang });
+            modelbuilder.Entity<Language>().HasKey(c => new { c.justiceCanLangCode });
 
             /*modelbuilder.Entity<ActReg>()
                 .HasOne(ActReg => ActReg.act)

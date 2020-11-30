@@ -14,12 +14,21 @@ namespace LegsandRegsCS.Controllers
     [ApiController]
     public class UpdateController : ControllerBase
     {
+
+        private readonly AppDbContext _context;
+
+        public UpdateController(AppDbContext context)
+        {
+            _context = context;
+        }
+    
         String password = "MFFwmEE3ZZXicsCGcDY5ZoW91ff96IMYPnfeQaxA";
         [HttpGet("{password}")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<String>> UpdateDatabase(string password)
         {
             if (password.Equals(this.password))
-                SeedData.testDbInput();
+                SeedData.update();
             else
                 return "Password is not valid";
 

@@ -11,6 +11,6 @@ namespace LegsandRegsCS.Models
         public string officialNum { get; set; }
         public string title { get; set; }
         public string lang { get; set; }
-        public string currentToDate { get; set; }
+        public DateTime currentToDate { get; set; }
     }
 }

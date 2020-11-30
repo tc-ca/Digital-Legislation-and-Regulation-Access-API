@@ -28,6 +28,11 @@ namespace LegsandRegsCS.Controllers
         [ProducesResponseType(typeof(RegDetails), 200)]
         public async Task<ActionResult<string>> GetRegDetail(string id)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             var regDetail = await _context.RegDetails.FindAsync(id);
 
             if (regDetail == null)
@@ -47,6 +52,11 @@ namespace LegsandRegsCS.Controllers
         [ProducesResponseType(typeof(List<RegDetails>), 200)]
         public async Task<ActionResult<string>> GetRegdetails([FromBody] string[] ids)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             if (ids == null)
             {
                 return NotFound();

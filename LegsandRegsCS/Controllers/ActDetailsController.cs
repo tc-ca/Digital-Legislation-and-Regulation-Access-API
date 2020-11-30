@@ -28,6 +28,11 @@ namespace LegsandRegsCS.Controllers
         [ProducesResponseType(typeof(ActDetails), 200)]
         public async Task<ActionResult<string>> GetActDetails(string uniqueId, string lang)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             var actDetail = await _context.ActDetails.FindAsync(uniqueId,lang);
 
             if (actDetail == null)
@@ -57,6 +62,11 @@ namespace LegsandRegsCS.Controllers
         [ProducesResponseType(typeof(List<ActDetails>), 200)]
         public async Task<ActionResult<string>> GetActs([FromBody] List<ActId> ids)
         {
+            var headers = this.Request.Headers;
+
+            if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
+                return Unauthorized();
+
             if (ids == null)
             {
                 return NotFound();

@@ -9,31 +9,26 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using LegsandRegsCS.Models;
 using LegsandRegsCS.Data;
+using Microsoft.Extensions.Primitives;
 
 namespace LegsandRegsCS
 {
     public class Program
     {
+        public static String secretTokenHeader = "X-3scale-proxy-secret-token";
+        public static StringValues secretToken = new StringValues("Q054O7mQJ9mdSUPQdhTM9V3Vg0ykLKcAGar2g0EIym0JEuvTkfBBnI5m3ltr2T2e");
+
+        public static IServiceProvider services;
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            
-            using (var scope = host.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                
-                try
-                {
-                    //SeedData.Initialize(services);
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred seeding the DB.");
-                }
-            }
-            host.Run();
 
+            var scope = host.Services.CreateScope();
+
+            //Adding services to class variable so that it can be accessed by the SeedData methods, which will need it to make DB changes
+            Program.services = scope.ServiceProvider;
+            
+            host.Run();
 
         }
 
