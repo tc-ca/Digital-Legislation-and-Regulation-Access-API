@@ -19,24 +19,24 @@ namespace LegsandRegsCS.Data
     public class SeedData
     {
         private static AppDbContext context;
-        public static async void update()
+        public static async void Update()
         {
 
             context = new AppDbContext(Program.services.GetRequiredService<DbContextOptions<AppDbContext>>());
-            DateTime minDate = context.Act.Min(a => a.currentToDate);
+            DateTime minDate = await context.Act.MinAsync(a => a.currentToDate);
 
             //Checking to see if any regulations are out of date
             if(DateTime.Compare(DateTime.Now, minDate) >= 0)
             {
-                initialize();
+                Initialize();
             }
             
         }
 
-        private static async void initialize()
+        private static async void Initialize()
         {
             string xml = "";
-
+            int totalFailures = 0;
 
             for (int tries = 0; xml.Equals(""); tries++)
             {
@@ -46,6 +46,7 @@ namespace LegsandRegsCS.Data
                 }
                 catch
                 {
+                    totalFailures++;
                     await Task.Delay(1000);
                     if(tries > 3)
                         await Task.Delay(300000);
@@ -94,10 +95,13 @@ namespace LegsandRegsCS.Data
                     }
                     catch
                     {
+                        totalFailures++;
+                        if (totalFailures > 500)//If the service seems to be broken, give up for the day and try again at the next scheduled attempt
+                            return;
                         await Task.Delay(1000);
                         if (tries > 3)
                         {
-                            newDetails = context.RegDetails.Find(reg.Attribute("id").Value);
+                            newDetails = context.RegDetails.Find(reg.Attribute("id").Value);//Find will return null if there is no match
                         }
                     }
                 }
@@ -105,136 +109,76 @@ namespace LegsandRegsCS.Data
                     regDetails.Add(newDetails);
             }
 
-            int i = 1;
-            int successes = 0;
-            int failures = 0;
-            foreach (XElement reg in rawRegs.Elements("Regulation"))
+            context.Reg.RemoveRange(context.Reg);
+            context.Act.RemoveRange(context.Act);
+            context.RegDetails.RemoveRange(context.RegDetails);
+            context.ActDetails.RemoveRange(context.ActDetails);
+
+            await context.SaveChangesAsync();
+
+            int loops = 0;
+            foreach (Reg reg in regs)
             {
-                context.Reg.Add(
-                    new Reg
-                    {
-                        id = reg.Attribute("id").Value,
-                        otherLangId = reg.Attribute("olid").Value,
-                        uniqueId = reg.Element("UniqueId").Value,
-                        title = reg.Element("Title").Value,
-                        lang = reg.Element("Language").Value,
-                        currentToDate = DateTime.Parse(reg.Element("CurrentToDate").Value)
-                    });
-                string fullDetailsJSON = getJsonFromXmlOnWeb(reg.Element("LinkToXML").Value);
-
-                if (fullDetailsJSON != "")
+                context.Reg.Add(reg);
+                if (loops % 100 == 0)
                 {
-                    context.RegDetails.Add(new RegDetails
-                    {
-                        id = reg.Attribute("id").Value,
-                        fullDetails = fullDetailsJSON
-                    });
+                    await SaveChanges();
                 }
-
-                if (i % 25 == 0)
-                {
-                    try
-                    {
-                        await context.SaveChangesAsync();
-                        successes++;
-                        Console.WriteLine("A batch of Regs was saved successfully. There have been " + successes + " successes and " + failures + " failures.");
-                    }
-                    catch (DbUpdateException)
-                    {
-                        failures++;
-                        Console.WriteLine("There was an exception thrown when saving changes to a batch of Regs");
-                    }
-                }
-                i++;
             }
 
+            loops = 0;
+            foreach (Act act in acts)
+            {
+                context.Act.Add(act);
+                if (loops % 100 == 0)
+                {
+                    await SaveChanges();
+                }
+
+            }
+
+            loops = 0;
+            foreach (ActDetails actDetail in actDetails)
+            {
+                context.ActDetails.Add(actDetail);
+                if (loops % 25 == 0)
+                {
+                    await SaveChanges();
+                }
+
+            }
+
+            loops = 0;
+            foreach (ActDetails actDetail in actDetails)
+            {
+                context.ActDetails.Add(actDetail);
+                if (loops % 25 == 0)
+                {
+                    await SaveChanges();
+                }
+            }
+
+
+        }
+
+        private static async Task<bool> SaveChanges()
+        {
             try
             {
                 await context.SaveChangesAsync();
-                successes++;
-                Console.WriteLine("Regs were saved successfully. There have been " + successes + " successes and " + failures + " failures.");
+                return true;
             }
             catch (DbUpdateException)
             {
-                failures++;
-                Console.WriteLine("There was an exception thrown when saving changes to the last batch of Regs. There have been " + successes + " successes and " + failures + " failures.");
-            }
-
-            i = 1;
-            successes = 0;
-            failures = 0;
-            foreach (XElement act in rawActs.Elements("Act"))
-            {
-
-                string fullDetailsJSON = getJsonFromXmlOnWeb(act.Element("LinkToXML").Value);
-
-                if (fullDetailsJSON != "")
-                {
-                    context.ActDetails.Add(new ActDetails
-                    {
-                        uniqueId = act.Element("UniqueId").Value,
-                        lang = act.Element("Language").Value,
-                        fullDetails = fullDetailsJSON
-                    });
-                }
-
-                Act newAct = new Act
-                {
-                    uniqueId = act.Element("UniqueId").Value,
-                    officialNum = act.Element("OfficialNumber").Value,
-                    lang = act.Element("Language").Value,
-                    title = act.Element("Title").Value,
-                    currentToDate = DateTime.Parse(act.Element("CurrentToDate").Value),
-                    regs = new List<ActReg>()
-                };
-
                 try
                 {
-                    foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
-                    {
-                        var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
-                        if (reg != null)
-                        {
-                            newAct.regs.Add(new ActReg
-                            {
-                                reg = reg
-                            });
-                        }
-
-                    }
+                    await context.SaveChangesAsync();
+                    return true;
                 }
-                catch { }
-
-                context.Act.Add(newAct);
-
-                //if (i % 15 == 0)
-                if (0 == 0)
+                catch (DbUpdateException)
                 {
-                    try
-                    {
-                        await context.SaveChangesAsync();
-                        successes++;
-                        Console.WriteLine("A batch of Acts was saved successfully. There have been " + successes + " successes and " + failures + " failures.");
-                    }
-                    catch (DbUpdateException)
-                    {
-                        failures++;
-                        Console.WriteLine("There was an exception thrown when saving changes to a batch of Acts. There have been " + successes + " successes and " + failures + " failures.");
-                    }
+                    return false;
                 }
-                i++;
-            }
-
-            try
-            {
-                await context.SaveChangesAsync();
-                successes++;
-                Console.WriteLine("Acts were saved successfully. There have been " + successes + " successes and " + failures + " failures.");
-            }
-            catch (DbUpdateException)
-            {
-                failures++;
-                Console.WriteLine("There was an exception thrown when saving changes to the last batch of Acts. There have been " + successes + " successes and " + failures + " failures.");
             }
         }
 

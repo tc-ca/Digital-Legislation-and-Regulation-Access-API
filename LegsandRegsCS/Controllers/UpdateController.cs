@@ -28,7 +28,7 @@ namespace LegsandRegsCS.Controllers
         public async Task<ActionResult<String>> UpdateDatabase(string password)
         {
             if (password.Equals(this.password))
-                SeedData.update();
+                SeedData.Update();
             else
                 return "Password is not valid";
 

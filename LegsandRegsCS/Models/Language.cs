@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LegsandRegsCS.Models
 {
+    [Table("TY006_LANGUAGE")]
     public class Language
     {
-        public string justiceCanLangCode { get; set; }
-        public string tcLangCode { get; set; }
-        public string langName { get; set; }
+        [Column("LANG_CD")]
+        public string langCode { get; set; }
+        [Column("LANG_ELBL")]
+        public string englishLabel { get; set; }
+        [Column("LANG_FLBL")]
+        public string frenchLabel { get; set; }
     }
 }
