@@ -23,14 +23,22 @@ namespace LegsandRegsCS.Data
         {
 
             context = new AppDbContext(Program.services.GetRequiredService<DbContextOptions<AppDbContext>>());
-            DateTime minDate = await context.Act.MinAsync(a => a.currentToDate);
+            try
+            {
+                DateTime minDate = await context.Act.MinAsync(a => a.currentToDate);
 
-            //Checking to see if any regulations are out of date
-            if(DateTime.Compare(DateTime.Now, minDate) >= 0)
+                //Checking to see if any regulations are out of date
+                if (DateTime.Compare(DateTime.Now, minDate) >= 0)
+                {
+                    Initialize();
+                }
+            }
+            catch
             {
                 Initialize();
             }
             
+
         }
 
         private static async void Initialize()
@@ -48,7 +56,7 @@ namespace LegsandRegsCS.Data
                 {
                     totalFailures++;
                     await Task.Delay(1000);
-                    if(tries > 3)
+                    if (tries > 3)
                         await Task.Delay(300000);
                     if (tries > 5)
                         return;
@@ -109,6 +117,67 @@ namespace LegsandRegsCS.Data
                     regDetails.Add(newDetails);
             }
 
+            foreach (XElement act in rawActs.Elements("Act"))
+            {
+                Act newAct =
+                    new Act
+                    {
+                        uniqueId = act.Element("UniqueId").Value,
+                        officialNum = act.Element("OfficialNumber").Value,
+                        lang = act.Element("Language").Value,
+                        title = act.Element("Title").Value,
+                        currentToDate = DateTime.Parse(act.Element("CurrentToDate").Value),
+                        regs = new List<ActReg>()
+                    };
+                try
+                {
+                    foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
+                    {
+                        var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
+                        if (reg != null)
+                        {
+                            newAct.regs.Add(new ActReg
+                            {
+                                reg = reg
+                            });
+                        }
+                    }
+                }
+                catch { }
+
+                acts.Add(newAct);
+
+                string fullDetailsJSON = "";
+                ActDetails newDetails = null;
+
+                for (int tries = 0; fullDetailsJSON.Equals(""); tries++)
+                {
+                    try
+                    {
+                        fullDetailsJSON = getJsonFromXmlOnWeb(act.Element("LinkToXML").Value);
+                        newDetails = new ActDetails
+                        {
+                            uniqueId = act.Element("UniqueId").Value,
+                            lang = act.Element("Language").Value,
+                            fullDetails = fullDetailsJSON
+                        };
+                    }
+                    catch
+                    {
+                        totalFailures++;
+                        if (totalFailures > 500)//If the service seems to be broken, give up for the day and try again at the next scheduled attempt
+                            return;
+                        await Task.Delay(1000);
+                        if (tries > 3)
+                        {
+                            newDetails = context.ActDetails.Find(act.Element("UniqueId").Value, act.Element("Language").Value);
+                        }
+                    }
+                }
+                if (newDetails != null)
+                    actDetails.Add(newDetails);
+            }
+
             context.Reg.RemoveRange(context.Reg);
             context.Act.RemoveRange(context.Act);
             context.RegDetails.RemoveRange(context.RegDetails);
@@ -120,21 +189,22 @@ namespace LegsandRegsCS.Data
             foreach (Reg reg in regs)
             {
                 context.Reg.Add(reg);
-                if (loops % 100 == 0)
+                if (loops % 500 == 0)
                 {
                     await SaveChanges();
                 }
+                loops++;
             }
 
             loops = 0;
             foreach (Act act in acts)
             {
                 context.Act.Add(act);
-                if (loops % 100 == 0)
+                if (loops % 500 == 0)
                 {
                     await SaveChanges();
                 }
-
+                loops++;
             }
 
             loops = 0;
@@ -145,7 +215,7 @@ namespace LegsandRegsCS.Data
                 {
                     await SaveChanges();
                 }
-
+                loops++;
             }
 
             loops = 0;
@@ -156,6 +226,7 @@ namespace LegsandRegsCS.Data
                 {
                     await SaveChanges();
                 }
+                loops++;
             }
 
 
@@ -185,7 +256,7 @@ namespace LegsandRegsCS.Data
         private static async Task<string> httpGet(string url)
         {
 
-            try 
+            try
             {
                 System.Net.HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
@@ -211,7 +282,7 @@ namespace LegsandRegsCS.Data
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(fullDetailsXML.ToString());
-                return JsonConvert.SerializeXmlNode(doc).Replace(@"\","");
+                return JsonConvert.SerializeXmlNode(doc).Replace(@"\", "");
             }
             catch
             {
