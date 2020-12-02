@@ -29,6 +29,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             return await _context.Reg.ToListAsync();
         }
@@ -41,6 +43,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             var reg = await _context.Reg.FindAsync(id);
 
@@ -60,6 +64,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             if (ids == null)
             {

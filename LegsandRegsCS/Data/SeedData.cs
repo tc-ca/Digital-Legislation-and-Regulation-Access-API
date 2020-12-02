@@ -19,29 +19,59 @@ namespace LegsandRegsCS.Data
     public class SeedData
     {
         private static AppDbContext context;
-        public static async void Update()
+        private static bool dbBuildInProgress = false;
+
+        public static async void Update(bool force = false)
         {
 
             context = new AppDbContext(Program.services.GetRequiredService<DbContextOptions<AppDbContext>>());
+            if (force)
+            {
+                Program.telemetry.TrackEvent("FORCE_UPDATE_STARTED");
+                Start();
+            }
+            else {
+                try
+                {
+                    DateTime minDate = await context.Act.MinAsync(a => a.currentToDate);
+
+                    //Checking to see if any regulations are out of date
+                    if (DateTime.Compare(DateTime.Now, minDate) >= 0)
+                    {
+                        Program.telemetry.TrackTrace("The DB is out of date. It will be updated.");
+                        Program.telemetry.TrackEvent("UPDATE_STARTED");
+                        Start();
+                    }
+                }
+                catch
+                {
+                    Program.telemetry.TrackTrace("The DB is empty. It will be populated.");
+                    Program.telemetry.TrackEvent("DB_INITIALIZATION");
+                    Start();
+                }
+            }
+        }
+
+        private static async void Start()
+        {
             try
             {
-                DateTime minDate = await context.Act.MinAsync(a => a.currentToDate);
-
-                //Checking to see if any regulations are out of date
-                if (DateTime.Compare(DateTime.Now, minDate) >= 0)
-                {
-                    Initialize();
-                }
+                ExtractAndLoad();
+                if(dbBuildInProgress == false)
+                    Program.downForMaintenance = false;//If some of the data does not make it into the DB, the API stays down for maintenance
             }
             catch
             {
-                Initialize();
+                Program.telemetry.TrackTrace("An unexpected error occured during the update.");
+                Program.telemetry.TrackEvent("UPDATE_FAILED");
+                if (dbBuildInProgress == false)
+                    Program.downForMaintenance = false;
+                else
+                    Program.telemetry.TrackEvent("CRITICAL_FAILURE");
             }
-            
-
         }
 
-        private static async void Initialize()
+        private static async void ExtractAndLoad()
         {
             string xml = "";
             int totalFailures = 0;
@@ -59,7 +89,12 @@ namespace LegsandRegsCS.Data
                     if (tries > 3)
                         await Task.Delay(300000);
                     if (tries > 5)
+                    {
+                        Program.telemetry.TrackTrace("Retrieval of the primary data source failed. DB update cancelled.");
+                        Program.telemetry.TrackEvent("UPDATE_FAILED");
                         return;
+                    }
+                        
                 }
             }
 
@@ -105,11 +140,17 @@ namespace LegsandRegsCS.Data
                     {
                         totalFailures++;
                         if (totalFailures > 500)//If the service seems to be broken, give up for the day and try again at the next scheduled attempt
+                        {
+                            Program.telemetry.TrackTrace("There have been 500 failed attempts to retrieve regulations. DB update cancelled.");
+                            Program.telemetry.TrackEvent("UPDATE_FAILED");
                             return;
+                        }
+                        
                         await Task.Delay(1000);
                         if (tries > 3)
                         {
                             newDetails = context.RegDetails.Find(reg.Attribute("id").Value);//Find will return null if there is no match
+                            Program.telemetry.TrackTrace("A Reg Details had to be retrieved from the old DB due to too many failed retrievals.");
                         }
                     }
                 }
@@ -133,7 +174,7 @@ namespace LegsandRegsCS.Data
                 {
                     foreach (XElement childReg in act.Element("RegsMadeUnderAct").Descendants("Reg"))
                     {
-                        var reg = context.Reg.Find(childReg.Attribute("idRef").Value);
+                        var reg = regs.Find(r => r.id == childReg.Attribute("idRef").Value);
                         if (reg != null)
                         {
                             newAct.regs.Add(new ActReg
@@ -166,46 +207,74 @@ namespace LegsandRegsCS.Data
                     {
                         totalFailures++;
                         if (totalFailures > 500)//If the service seems to be broken, give up for the day and try again at the next scheduled attempt
+                        {
+                            Program.telemetry.TrackTrace("There have been 500 failed attempts to retrieve regulations. DB update cancelled.");
+                            Program.telemetry.TrackEvent("UPDATE_FAILED");
                             return;
+                        }
                         await Task.Delay(1000);
                         if (tries > 3)
                         {
                             newDetails = context.ActDetails.Find(act.Element("UniqueId").Value, act.Element("Language").Value);
+                            Program.telemetry.TrackTrace("An Act Details had to be retrieved from the old DB due to too many failed retrievals.");
                         }
                     }
                 }
                 if (newDetails != null)
                     actDetails.Add(newDetails);
             }
+            Program.telemetry.TrackTrace("Retrieval of the new data succeeded. Proceeding with DB reset and rebuild.");
+            Program.telemetry.TrackEvent("RESET_STARTED");
+            dbBuildInProgress = true;
+            Program.downForMaintenance = true;
+
+            context.Act.RemoveRange(context.Act);
+            await SaveChanges();
+            Program.telemetry.TrackTrace("Acts deleted");
 
             context.Reg.RemoveRange(context.Reg);
-            context.Act.RemoveRange(context.Act);
-            context.RegDetails.RemoveRange(context.RegDetails);
-            context.ActDetails.RemoveRange(context.ActDetails);
+            await SaveChanges();
+            Program.telemetry.TrackTrace("Regs deleted");
 
-            await context.SaveChangesAsync();
+            context.RegDetails.RemoveRange(context.RegDetails);
+            await SaveChanges();
+            Program.telemetry.TrackTrace("Reg Details deleted");
+
+            context.ActDetails.RemoveRange(context.ActDetails);
+            await SaveChanges();
+            Program.telemetry.TrackTrace("Act Details deleted");
+
+            Program.telemetry.TrackTrace("The DB has been cleared");
+
+            
 
             int loops = 0;
             foreach (Reg reg in regs)
             {
                 context.Reg.Add(reg);
-                if (loops % 500 == 0)
+                if (loops % 100 == 0)
                 {
                     await SaveChanges();
                 }
                 loops++;
             }
+            await SaveChanges();
+
+            Program.telemetry.TrackTrace("Regs saved");
 
             loops = 0;
             foreach (Act act in acts)
             {
                 context.Act.Add(act);
-                if (loops % 500 == 0)
+                if (loops % 100 == 0)
                 {
                     await SaveChanges();
                 }
                 loops++;
             }
+            await SaveChanges();
+
+            Program.telemetry.TrackTrace("Acts saved");
 
             loops = 0;
             foreach (ActDetails actDetail in actDetails)
@@ -217,22 +286,41 @@ namespace LegsandRegsCS.Data
                 }
                 loops++;
             }
+            await SaveChanges();
+
+            Program.telemetry.TrackTrace("Act Details saved");
 
             loops = 0;
-            foreach (ActDetails actDetail in actDetails)
+            foreach (RegDetails regDetail in regDetails)
             {
-                context.ActDetails.Add(actDetail);
+                context.RegDetails.Add(regDetail);
                 if (loops % 25 == 0)
                 {
                     await SaveChanges();
                 }
                 loops++;
+            }
+            await SaveChanges();
+
+            Program.telemetry.TrackTrace("Reg Details saved");
+
+            if (await SaveChanges())
+            {
+                Program.telemetry.TrackTrace("The update was successful.");
+                Program.telemetry.TrackEvent("UPDATE_SUCCESSFUL");
+                dbBuildInProgress = false;
+            }
+            else
+            {
+                Program.telemetry.TrackTrace("Some or all of the data could not be uploaded to the DB. The DB is incomplete and must be rebuilt.");
+                Program.telemetry.TrackEvent("UPDATE_FAILED");
+                Program.telemetry.TrackEvent("CRITICAL_FAILURE");
             }
 
 
         }
 
-        private static async Task<bool> SaveChanges()
+        private static async Task<bool> SaveChanges(int depth = 0)
         {
             try
             {
@@ -241,15 +329,11 @@ namespace LegsandRegsCS.Data
             }
             catch (DbUpdateException)
             {
-                try
+                if(depth < 5)
                 {
-                    await context.SaveChangesAsync();
-                    return true;
+                    return SaveChanges(depth + 1).Result;
                 }
-                catch (DbUpdateException)
-                {
-                    return false;
-                }
+                return false;
             }
         }
 

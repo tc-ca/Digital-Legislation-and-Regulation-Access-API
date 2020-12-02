@@ -32,6 +32,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             var acts = await _context.Act.ToListAsync();
 
@@ -58,6 +60,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             return await _context.Act.Include(x => x.regs).ThenInclude(x => x.reg).ToListAsync();
 
@@ -71,6 +75,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             var act = await _context.Act.Include(x => x.regs).FirstOrDefaultAsync(x => x.uniqueId == uniqueId && x.lang == lang);
 
@@ -90,6 +96,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             if (ids == null)
             {

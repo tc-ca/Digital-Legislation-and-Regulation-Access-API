@@ -13,7 +13,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using LegsandRegsCS.Models;
 using LegsandRegsCS.Data;
-
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace LegsandRegsCS
 {
@@ -35,12 +36,17 @@ namespace LegsandRegsCS
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TC Legislation and Regulation API", Version = "v1" });
             });
 
-
-
             services.AddDbContext<AppDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AppDbContext")));
 
             services.AddApplicationInsightsTelemetry(Configuration);
+
+            Program.telemetry = new TelemetryClient(
+                new TelemetryConfiguration(Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey")));
+
+            Program.telemetry.TrackTrace("The app service has been initialized");
+            Program.telemetry.TrackEvent("STARTUP");
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

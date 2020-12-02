@@ -32,7 +32,24 @@ namespace LegsandRegsCS.Controllers
             else
                 return "Password is not valid";
 
+            Program.telemetry.TrackTrace("Update requested by API call");
+            Program.telemetry.TrackEvent("DB_UPDATE_REQUESTED");
+
             return "Database update has been triggered";
+        }
+        [HttpGet("/force/{password}")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<String>> ForceUpdateDatabase(string password)
+        {
+            if (password.Equals(this.password))
+                SeedData.Update(true);
+            else
+                return "Password is not valid";
+
+            Program.telemetry.TrackTrace("Update forced by API call");
+            Program.telemetry.TrackEvent("DB_UPDATE_FORCED");
+
+            return "Database force update has been triggered";
         }
     }
 }

@@ -32,6 +32,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             var actDetail = await _context.ActDetails.FindAsync(uniqueId,lang);
 
@@ -66,6 +68,8 @@ namespace LegsandRegsCS.Controllers
 
             if (headers.TryGetValue(Program.secretTokenHeader, out Program.secretToken) == false)
                 return Unauthorized();
+            if (Program.downForMaintenance)
+                return StatusCode(503);
 
             if (ids == null)
             {
