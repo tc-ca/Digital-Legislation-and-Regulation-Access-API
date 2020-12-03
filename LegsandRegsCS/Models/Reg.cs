@@ -9,7 +9,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LegsandRegsCS.Models
 {
-    [Table("RY002_REG")]
+    [Table("RY002_REG")]    //WARNING: If this is ever changed, the custom SQL statement in the SeedData class must alse be updated
+                            //Due to technical limitations with EF Core, the table name cannot be populated from a common variable
     public class Reg
     {
         [Column("REG_ID")]

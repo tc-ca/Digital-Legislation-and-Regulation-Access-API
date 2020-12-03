@@ -61,11 +61,10 @@ namespace LegsandRegsCS
 
             app.UseApplicationInsightsExceptionTelemetry();
 
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-                context.Database.EnsureCreated();
-            }
+            var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
+            
+            var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            //context.Database.EnsureCreated();
 
             app.UseHttpsRedirection();
 
@@ -88,6 +87,7 @@ namespace LegsandRegsCS
             {
                 endpoints.MapControllers();
             });
+            SeedData.context = context;
         }
     }
 }
