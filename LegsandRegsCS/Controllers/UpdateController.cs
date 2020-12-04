@@ -23,9 +23,8 @@ namespace LegsandRegsCS.Controllers
         }
     
         String password = "MFFwmEE3ZZXicsCGcDY5ZoW91ff96IMYPnfeQaxA";
-        [HttpGet("{password}")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<String>> UpdateDatabase(string password)
+        [HttpGet]
+        public async Task<ActionResult<String>> UpdateDatabase([FromHeader] string password)
         {
             if (password.Equals(this.password))
                 SeedData.Update();
@@ -37,9 +36,8 @@ namespace LegsandRegsCS.Controllers
 
             return "Database update has been triggered";
         }
-        [HttpGet("/force/{password}")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<String>> ForceUpdateDatabase(string password)
+        [HttpGet("Force")]
+        public async Task<ActionResult<String>> ForceUpdateDatabase([FromHeader] string password)
         {
             if (password.Equals(this.password))
                 SeedData.Update(true);

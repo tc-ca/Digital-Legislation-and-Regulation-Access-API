@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LegsandRegsCS.Models
 {
-    [Table("TY006_LANGUAGE")]
+    [Table("TC010_LANGUAGE")]
     public class Language
     {
         [Column("LANG_CD")]

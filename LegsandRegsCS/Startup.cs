@@ -77,6 +77,7 @@ namespace LegsandRegsCS
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "TC Legislation and Regulation API v1");
                 c.DocumentTitle = "TC Legs & Regs API Definition";
+                
             });
 
             app.UseRouting();
