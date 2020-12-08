@@ -403,7 +403,7 @@ namespace LegsandRegsCS.Data
 
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(fullDetailsXML.ToString());
-                return JsonConvert.SerializeXmlNode(doc).Replace(@"\", "");
+                return JsonConvert.SerializeXmlNode(doc).Replace(@"\", "").Replace("\"@", "\"").Replace("\"#", "\"");
             }
             catch
             {

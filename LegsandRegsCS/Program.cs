@@ -16,9 +16,11 @@ namespace LegsandRegsCS
 {
     public class Program
     {
-        public static String secretTokenHeader = "X-3scale-proxy-secret-token";
-        public static StringValues secretToken = new StringValues("Q054O7mQJ9mdSUPQdhTM9V3Vg0ykLKcAGar2g0EIym0JEuvTkfBBnI5m3ltr2T2e");
+        public static string secretTokenHeader;
+        public static StringValues secretToken;
         public static bool downForMaintenance = false;
+        public static string databaseUpdatePassword;
+        public static Language[] languages;
 
         public static IServiceProvider services;
         public static TelemetryClient telemetry;

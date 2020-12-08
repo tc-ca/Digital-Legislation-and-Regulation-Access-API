@@ -15,6 +15,7 @@ using LegsandRegsCS.Models;
 using LegsandRegsCS.Data;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Primitives;
 
 namespace LegsandRegsCS
 {
@@ -44,6 +45,11 @@ namespace LegsandRegsCS
             Program.telemetry = new TelemetryClient(
                 new TelemetryConfiguration(Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey")));
 
+            Program.secretTokenHeader = Configuration.GetValue<string>("Keys:SecretTokenHeader");
+            Program.secretToken = new StringValues(Configuration.GetValue<string>("Keys:SecretToken"));
+            Program.databaseUpdatePassword = Configuration.GetValue<string>("Keys:DatabaseUpdatePassword");
+            Program.languages = Configuration.GetSection("Languages").Get<Language[]>();
+
             Program.telemetry.TrackTrace("The app service has been initialized");
             Program.telemetry.TrackEvent("STARTUP");
 
@@ -64,7 +70,7 @@ namespace LegsandRegsCS
             var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
             
             var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-            //context.Database.EnsureCreated();
+            context.Database.EnsureCreated();
 
             app.UseHttpsRedirection();
 

@@ -22,11 +22,10 @@ namespace LegsandRegsCS.Controllers
             _context = context;
         }
     
-        String password = "MFFwmEE3ZZXicsCGcDY5ZoW91ff96IMYPnfeQaxA";
         [HttpGet]
         public async Task<ActionResult<String>> UpdateDatabase([FromHeader] string password)
         {
-            if (password.Equals(this.password))
+            if (password.Equals(Program.databaseUpdatePassword))
                 SeedData.Update();
             else
                 return "Password is not valid";
@@ -39,7 +38,7 @@ namespace LegsandRegsCS.Controllers
         [HttpGet("Force")]
         public async Task<ActionResult<String>> ForceUpdateDatabase([FromHeader] string password)
         {
-            if (password.Equals(this.password))
+            if (password.Equals(Program.databaseUpdatePassword))
                 SeedData.Update(true);
             else
                 return "Password is not valid";
