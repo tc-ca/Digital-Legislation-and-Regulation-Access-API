@@ -283,7 +283,7 @@ namespace LegsandRegsCS.Data
             foreach (ActDetails actDetail in actDetails)
             {
                 context.ActDetails.Add(actDetail);
-                if (loops % 25 == 0)
+                if (loops % 10 == 0)
                 {
                     await SaveChanges();
                 }
@@ -297,7 +297,7 @@ namespace LegsandRegsCS.Data
             foreach (RegDetails regDetail in regDetails)
             {
                 context.RegDetails.Add(regDetail);
-                if (loops % 25 == 0)
+                if (loops % 10 == 0)
                 {
                     await SaveChanges();
                 }
