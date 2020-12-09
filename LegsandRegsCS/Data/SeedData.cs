@@ -329,12 +329,21 @@ namespace LegsandRegsCS.Data
         {
             dbBuildInProgress = true;
             Program.downForMaintenance = true;
-            context.Database.EnsureDeleted();
-            Program.telemetry.TrackTrace("The DB has been deleted");
+
+            bool deleted = context.Database.EnsureDeleted();
+            if(deleted)
+                Program.telemetry.TrackTrace("The DB has been deleted");
+            else
+                Program.telemetry.TrackTrace("The DB did not exist, so did not need to be deleted.");
+
+            await Task.Delay(5000);
+            Program.telemetry.TrackTrace("About to rebuild DB...");
             context.Database.EnsureCreated();
             Program.telemetry.TrackTrace("The DB structure has been rebuilt");
+
             await SeedLanguages();
             Program.telemetry.TrackTrace("The languages have been seeded");
+
             return true;
         }
 
