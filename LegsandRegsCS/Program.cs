@@ -21,6 +21,7 @@ namespace LegsandRegsCS
         public static bool downForMaintenance = false;
         public static string databaseUpdatePassword;
         public static Language[] languages;
+        public static string primaryDateSouceURL;
 
         public static IServiceProvider services;
         public static TelemetryClient telemetry;

@@ -45,10 +45,11 @@ namespace LegsandRegsCS
             Program.telemetry = new TelemetryClient(
                 new TelemetryConfiguration(Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey")));
 
-            Program.secretTokenHeader = Configuration.GetValue<string>("Keys:SecretTokenHeader");
+            Program.secretTokenHeader = Configuration.GetValue<string>("GatewaySettings:SecretTokenHeader");
             Program.secretToken = new StringValues(Configuration.GetValue<string>("Keys:SecretToken"));
             Program.databaseUpdatePassword = Configuration.GetValue<string>("Keys:DatabaseUpdatePassword");
             Program.languages = Configuration.GetSection("Languages").Get<Language[]>();
+            Program.primaryDateSouceURL = Configuration.GetValue<string>("PrimaryDataSource:URL");
 
             Program.telemetry.TrackTrace("The app service has been initialized");
             Program.telemetry.TrackEvent("STARTUP");

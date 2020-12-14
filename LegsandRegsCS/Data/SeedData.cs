@@ -85,7 +85,7 @@ namespace LegsandRegsCS.Data
             {
                 try
                 {
-                    xml = await httpGet("https://laws-lois.justice.gc.ca/eng/XML/Legis.xml");
+                    xml = await httpGet(Program.primaryDateSouceURL);
                 }
                 catch
                 {
