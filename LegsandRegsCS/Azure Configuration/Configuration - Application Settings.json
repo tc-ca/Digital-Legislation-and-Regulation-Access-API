@@ -1,0 +1,30 @@
+[
+  //These are for storing your app settings in an Azure App Service
+  //In the Admin Portal, within the App Service go to Settings > Configuration > Application Settings and click on Advanced edit
+  //Add these items in, making sure that the names are up to date with any changes that have been made to appsettings.json
+  {
+    "name": "ApplicationInsights__InstrumentationKey",
+    "value": "<<value>>",
+    "slotSetting": false
+  },
+  {
+    "name": "ConnectionStrings__AppDbContext",
+    "value": "<<value>>",
+    "slotSetting": false
+  },
+  {
+    "name": "GatewaySettings__SecretTokenHeader",
+    "value": "<<value>>",
+    "slotSetting": false
+  },
+  {
+    "name": "Keys__DatabaseUpdatePassword",
+    "value": "<<value>>",
+    "slotSetting": false
+  },
+  {
+    "name": "Keys__SecretToken",
+    "value": "<<value>>",
+    "slotSetting": false
+  }
+]
