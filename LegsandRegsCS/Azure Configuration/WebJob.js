@@ -6,7 +6,7 @@
 const https = require('https');
 
 const options = {
-    hostname: '<<host name>>',//Add your host name
+    hostname: '<<hostname>>',//Add your host name
     port: 443,
     path: '/api/update',//Confirm the path
     method: 'GET',

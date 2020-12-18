@@ -10,21 +10,21 @@
     "tc",
     "transport"
   ],
-  "x-api-store-short-desc": "This repository makes it easy to retrieve all of Canada's acts and regulations.",
-  "x-api-store-long-desc": "The TC Legislation and Regulation Repository is a database and web API that provides all of Canadaâ€™s Acts and Regulations in machine-readable format. Each Act and Regulation has a unique identifier, which makes it easy to keep track of references to specific regulations. For example, if you were developing an application for marine inspectors, you may have a section of the app where the inspector records each violation that they found during an inspection. You can link each violation to a regulation. The inspector will be able to search for regulations from within your app instead of finding them manually, and management at TC will be able to derive statistics about which regulations are being violated.",
-  "x-api-store-documentation": "<h3>What is TCLRR?</h3><p>The TC Legislation and Regulation Repository is a database and web API that provides all of Canadaâ€™s Acts and Regulations in machine-readable format. Each Act and Regulation has a unique identifier, which makes it easy to keep track of references to specific regulations. For example, if you were developing an application for marine inspectors, you may have a section of the app where the inspector records each violation that they found during an inspection. You can link each violation to a regulation. The inspector will be able to search for regulations from within your app instead of finding them manually, and management at TC will be able to derive statistics about which regulations are being violated.</p><br><h3>What service level can be expected from TCLRR?</h3><p>This application is rated to have a maximum tolerable downtime of eight business hours. There is currently no support guaranteed outside of regular business hours. Any application that depends on data from TCLRR should keep a cache of the data that it needs and should be designed to tolerate this level of downtime.</p><br><h3>What should I do if I detect a problem with TCLRR?</h3><p>If you notice a security related incident, such as an unauthorized entity taking control of TCLRR, you should contact IT Security immediately. If there is a problem such as unavailability or an apparent software bug, you should contact the manager of Digital Oversight. At the time of writing, that is Simon Piche.</p>",
+  "x-api-store-short-desc": "Toutes les lois et tous les règlements du gouvernement du Canada sont à portée de main grâce au Référentiel législatif et réglementaire de TC (RLRTC).",
+  "x-api-store-long-desc": "Le RLRTC consiste à la fois en une base de données et en une interface de programmation Web qui recense toutes les lois et tous les règlements du gouvernement du Canada en format lisible à la machine. Chaque loi et règlement possède un identificateur unique, ce qui facilite le suivi des renvois à des règlements particuliers. Par exemple, dans une application conçue pour les inspecteurs maritimes, on pourrait retrouver une section où les inspecteurs peuvent consigner toutes les infractions constatées pendant une inspection. Chaque infraction peut ainsi être associée à un règlement. De cette manière, l’inspecteur serait en mesure de rechercher des règlements à même l’application au lieu de le faire manuellement, et les gestionnaires de TC pourront extraire des statistiques sur les règlements enfreints.",
+  "x-api-store-documentation": "<h3>Qu’est-ce que le Référentiel législatif et réglementaire de TC (RLRTC)?</h3><p>Le RLRTC consiste à la fois en une base de données et en une interface de programmation Web qui recense toutes les lois et tous les règlements du gouvernement du Canada en format lisible à la machine. Chaque loi et règlement possède un identificateur unique, ce qui facilite le suivi des renvois à des règlements particuliers. Par exemple, dans une application conçue pour les inspecteurs maritimes, on pourrait retrouver une section où les inspecteurs peuvent consigner toutes les infractions constatées pendant une inspection. Chaque infraction peut ainsi être associée à un règlement. De cette manière, l’inspecteur serait en mesure de rechercher des règlements à même l’application au lieu de le faire manuellement, et les gestionnaires de TC pourront extraire des statistiques sur les règlements enfreints.</p><br><h3>À quel niveau de service peut-on s’attendre pour le RLRTC?</h3><p>Le temps d’arrêt maximal admissible pour cette application est de huit heures de travail normales. Le soutien technique n’est actuellement pas garanti en dehors des heures régulières de bureau. Il serait avisé de prévoir une cache où se trouvent les données du RLRTC nécessaires au fonctionnement de certaines applications et de concevoir ces applications pour qu’elles puissent tolérer un tel temps d’arrêt.</p><br><h3>Que devrais-je faire si je constate un problème avec le RLRTC?</h3><p>Si vous êtes témoin d’un incident lié à la sécurité, par exemple une prise de contrôle du RLRTC par une entité non autorisée, communiquez immédiatement avec la Sécurité des technologies de l’information (TI). Si vous constatez plutôt un problème de non-disponibilité ou un bogue logiciel apparent, communiquez avec le gestionnaire de l’équipe responsable de la surveillance numérique. Au moment de la rédaction du présent document, il s’agit de Simon Piché.</p>",
   "x-api-store-phone": "",
   "x-api-store-sensitivity": "Unclassified",
   "x-api-store-plans": {
     "free": {
-      "name": "Standard Plan",
-      "description": "All subscribers should use this plan."
+      "name": "Plan standard",
+      "description": "Tous les abonnés doivent utiliser ce plan."
     }
   },
   "info": {
     "version": "1.0",
-    "title": "TC Legislation and Regulation API",
-    "description": "This repository makes it easy to retrieve all of Canada's acts and regulations.",
+    "title": "Référentiel législatif et réglementaire du TC",
+    "description": "Toutes les lois et tous les règlements du gouvernement du Canada sont à portée de main grâce au Référentiel législatif et réglementaire de TC (RLRTC).",
     "contact": {
       "name": "Lawrence Maroun",
       "email": "lawrence.maroun@tc.gc.ca"
@@ -32,7 +32,7 @@
   },
   "schemes": [ "https" ],
   "basePath": "/",
-  "host": "", //Set this to match the environment's host
+  "host": "",//Set this to match the environment's host
   "paths": {
     "/actdetails/{uniqueId}/{lang}": {
       "get": {

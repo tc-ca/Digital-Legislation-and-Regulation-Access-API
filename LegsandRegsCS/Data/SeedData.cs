@@ -55,7 +55,7 @@ namespace LegsandRegsCS.Data
             try
             {
                 await ExtractAndLoad(force);
-                if(dbBuildInProgress == false)
+                if(dbBuildInProgress == false && Program.downForMaintenance)
                 {
                     Program.downForMaintenance = false;//If some of the data does not make it into the DB, the API stays down for maintenance
                     Program.telemetry.TrackTrace("App taken out of maintenance mode");
@@ -66,7 +66,7 @@ namespace LegsandRegsCS.Data
             {
                 Program.telemetry.TrackTrace("An unexpected error occured during the update.");
                 Program.telemetry.TrackEvent("UPDATE_FAILED");
-                if (dbBuildInProgress == false)
+                if (dbBuildInProgress == false && Program.downForMaintenance)
                 {
                     Program.downForMaintenance = false;
                     Program.telemetry.TrackTrace("App taken out of maintenance mode");
@@ -329,6 +329,7 @@ namespace LegsandRegsCS.Data
         {
             dbBuildInProgress = true;
             Program.downForMaintenance = true;
+            Program.telemetry.TrackTrace("Entering maintenance mode");
 
             bool deleted = context.Database.EnsureDeleted();
             if(deleted)
@@ -336,7 +337,7 @@ namespace LegsandRegsCS.Data
             else
                 Program.telemetry.TrackTrace("The DB did not exist, so did not need to be deleted.");
 
-            await Task.Delay(5000);
+            await Task.Delay(60000);
             Program.telemetry.TrackTrace("About to rebuild DB...");
             context.Database.EnsureCreated();
             Program.telemetry.TrackTrace("The DB structure has been rebuilt");
@@ -385,16 +386,13 @@ namespace LegsandRegsCS.Data
 
         private static async Task<string> httpGet(string url)
         {
-
             try
             {
-                System.Net.HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                using Stream stream = response.GetResponseStream();
+                using StreamReader reader = new StreamReader(stream);
+                return reader.ReadToEnd();
             }
             catch (Exception e)
             {
